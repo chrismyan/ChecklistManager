@@ -1,5 +1,6 @@
 package edu.westga.checklistmanager;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,6 +15,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.w3c.dom.Text;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -23,14 +26,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
 
         populateListView();
         registerClickCallBack();
@@ -61,7 +64,12 @@ public class MainActivity extends AppCompatActivity {
                 TextView textView = (TextView) clickedView;
                 String message = "You clicked " + position + " which is string " +
                         textView.getText();
-                Toast.makeText(MainActivity.this,message, Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this,message, Toast.LENGTH_SHORT).show();
+
+                Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
+
+                checklistIntent.putExtra("taskMessage",message);
+                startActivity(checklistIntent);
             }
         });
     }

@@ -6,8 +6,14 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.List;
 
 public class TaskActivity extends AppCompatActivity {
+    private ListView taskListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +31,25 @@ public class TaskActivity extends AppCompatActivity {
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        // Retrieve text from main activity
+        Bundle taskData = getIntent().getExtras();
+        if(taskData == null) {
+            return;
+        }
+        String taskMessage = taskData.getString("taskMessage");
+        TextView taskText = (TextView) findViewById(R.id.checklistText);
+        taskText.setText(taskMessage );
+
+        // find listview
+        this.taskListView = (ListView) findViewById(R.id.taskListView);
+        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
+        databaseAccess.open();
+        List<String> tasks = databaseAccess.getTasks();
+        databaseAccess.close();
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tasks);
+        this.taskListView.setAdapter(adapter);
     }
 
 }
