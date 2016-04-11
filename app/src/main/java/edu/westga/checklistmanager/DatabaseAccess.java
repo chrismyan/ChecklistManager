@@ -14,6 +14,7 @@ public class DatabaseAccess {
     private SQLiteOpenHelper openHelper;
     private SQLiteDatabase database;
     private static DatabaseAccess instance;
+    private int categoryInt;
 
     /**
      * Private constructor to aboid object creation from outside classes.
@@ -53,6 +54,10 @@ public class DatabaseAccess {
         }
     }
 
+    public void setCategory(int category) {
+        this.categoryInt = category;
+    }
+
     /**
      * Read all quotes from the database.
      *
@@ -60,7 +65,7 @@ public class DatabaseAccess {
      */
     public List<String> getTasks() {
         List<String> list = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT * FROM tasks", null);
+        Cursor cursor = database.rawQuery("SELECT _taskname FROM tasks WHERE _category =" + Integer.toString( this.categoryInt), null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             list.add(cursor.getString(0));
