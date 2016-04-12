@@ -63,7 +63,7 @@ public class DatabaseAccess {
      *
      * @return a List of quotes
      */
-    public List<String> getTasks() {
+    public List<String> getTaskItems() {
         List<String> list = new ArrayList<>();
         Cursor cursor = database.rawQuery("SELECT _taskname FROM tasks WHERE _category =" + Integer.toString( this.categoryInt), null);
         cursor.moveToFirst();
