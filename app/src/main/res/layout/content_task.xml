@@ -23,5 +23,6 @@
         android:layout_height="wrap_content"
         android:id="@+id/taskListView"
         android:layout_below="@+id/checklistText"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:choiceMode="multipleChoice" />
 </RelativeLayout>

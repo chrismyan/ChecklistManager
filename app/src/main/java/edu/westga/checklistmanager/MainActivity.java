@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
 
                 checklistIntent.putExtra("taskMessage",message);
+                checklistIntent.putExtra("category", (int) position + 1);
                 startActivity(checklistIntent);
             }
         });
