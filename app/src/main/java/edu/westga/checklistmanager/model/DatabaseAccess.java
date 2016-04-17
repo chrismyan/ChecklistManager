@@ -1,9 +1,11 @@
 package edu.westga.checklistmanager.model;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.ContactsContract;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ public class DatabaseAccess {
     private int event;
 
     /**
-     * Private constructor to aboid object creation from outside classes.
+     * Private constructor to avoid object creation from outside classes.
      *
      * @param context
      */
@@ -77,7 +79,8 @@ public class DatabaseAccess {
 
     public List<String> getEvents() {
         List<String> list = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT _eventName, _id FROM events" , null);
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT _eventName, _id FROM events" , null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             list.add(cursor.getString(0));
@@ -85,5 +88,63 @@ public class DatabaseAccess {
         }
         cursor.close();
         return list;
+    }
+
+    public void addEvent(String eventName) {
+        ContentValues values = new ContentValues();
+        values.put(DatabaseOpenHelper.COLUMN_EVENTNAME, eventName);
+
+        database.insert(DatabaseOpenHelper.TABLE_EVENTS, null, values);
+        database.close();
+    }
+
+    public boolean deleteEvent(String eventName) {
+        boolean result = false;
+        String query = "Select * FROM " + DatabaseOpenHelper.TABLE_EVENTS + " WHERE " + DatabaseOpenHelper.COLUMN_EVENTNAME + " =  \"" + eventName + "\"";
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+//        int eventID = Integer.parseInt(eventIDString);
+
+        if(cursor.moveToFirst()){
+            String eventIDString = cursor.getString(0);
+            db.delete(DatabaseOpenHelper.TABLE_EVENTS, DatabaseOpenHelper.COLUMN_EVENT_ID + " = ?", new String[]{eventIDString});
+            cursor.close();
+            result = true;
+        }
+        db.close();
+        return result;
+    }
+
+    public boolean isItemCompleted(String taskItem) {
+        boolean completed = false;
+        String query = "Select * FROM " + DatabaseOpenHelper.TABLE_TASK_ITEMS + " WHERE " + DatabaseOpenHelper.COLUMN_TASKITEM_NAME + " =  \"" + taskItem + "\"";
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        if(cursor.moveToFirst()){
+            String itemIDString = cursor.getString(0);
+            db.delete(DatabaseOpenHelper.TABLE_EVENTS, DatabaseOpenHelper.COLUMN_EVENT_ID + " = ?", new String[]{itemIDString});
+            cursor.close();
+            completed = true;
+        }
+        db.close();
+        return completed;
+    }
+
+    public boolean itemCompleted(String taskItemName) {
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, 1);
+        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_taskItemName =?", new String[]{taskItemName});
+        db.close();
+        return true;
+    }
+
+    public boolean itemNotCompleted(String taskItemName) {
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, 0);
+        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_taskItemName = ?", new String[]{taskItemName});
+        db.close();
+        return true;
     }
 }

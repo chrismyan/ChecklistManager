@@ -1,5 +1,7 @@
 package edu.westga.checklistmanager.controller;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -20,7 +23,7 @@ import edu.westga.checklistmanager.R;
 
 public class TaskActivity extends AppCompatActivity {
     private ListView taskListView;
-    private int event;
+    private int category;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,17 +51,18 @@ public class TaskActivity extends AppCompatActivity {
         TextView taskText = (TextView) findViewById(R.id.checklistText);
         taskText.setText(taskMessage );
 
-        this.event = taskData.getInt("category");
+        this.category = taskData.getInt("category");
 
         // find listview
         this.taskListView = (ListView) findViewById(R.id.taskListView);
+        this.taskListView.setLongClickable(true);
         DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        databaseAccess.setEvent(this.event);
+        databaseAccess.setEvent(this.category);
         databaseAccess.open();
-        List<String> tasks = databaseAccess.getTaskItems(this.event);
+        List<String> tasks = databaseAccess.getTaskItems(this.category);
         databaseAccess.close();
 
-                ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked, tasks);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked, tasks);
         this.taskListView.setAdapter(adapter);
 
         // Check which tasks are completed
@@ -67,12 +71,16 @@ public class TaskActivity extends AppCompatActivity {
         for(int counter = 0; counter < this.taskListView.getCount(); counter++) {
             v = this.taskListView.getAdapter().getView(counter, null, null);
             tv = (TextView) v.findViewById(counter);
-            String str = adapter.getItem(counter).toString();
-            Log.d("Item CHOOSEN", str);
-//            tv.setPaintFlags(tv.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+            String taskItem = adapter.getItem(counter).toString();
+            Log.d("Item CHOOSEN", taskItem);
+
+            if(databaseAccess.isItemCompleted(taskItem)) {
+                this.taskListView.setItemChecked(counter, true);
+            }
         }
 
-        registerClickCallBack();
+        this.registerClickCallBack();
+        this.registerLongClickCallBack();
     }
 
     private void registerClickCallBack() {
@@ -93,4 +101,34 @@ public class TaskActivity extends AppCompatActivity {
         });
     }
 
+
+    private void registerLongClickCallBack() {
+        this.taskListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+                                           final int arg2, long arg3) {
+                Toast.makeText(TaskActivity.this, "Task Activity: this is my Toast message!!! =)",
+                        Toast.LENGTH_LONG).show();
+                TextView textView = (TextView) arg1;
+                String taskItem = textView.getText().toString();
+                showDeleteDialog(taskItem);
+                return true;
+            }
+        });
+    }
+
+    public void showDeleteDialog(String taskItem) {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Delete task item")
+                .setMessage("Are you sure you want to delete " + taskItem + "? ")
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d("DELETE", "Task to add: ");
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
+        dialog.show();
+    }
 }
