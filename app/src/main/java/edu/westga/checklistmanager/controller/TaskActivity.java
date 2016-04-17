@@ -1,4 +1,4 @@
-package edu.westga.checklistmanager;
+package edu.westga.checklistmanager.controller;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -15,9 +15,12 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import edu.westga.checklistmanager.model.DatabaseAccess;
+import edu.westga.checklistmanager.R;
+
 public class TaskActivity extends AppCompatActivity {
     private ListView taskListView;
-    private int category;
+    private int event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,14 +48,14 @@ public class TaskActivity extends AppCompatActivity {
         TextView taskText = (TextView) findViewById(R.id.checklistText);
         taskText.setText(taskMessage );
 
-        this.category = taskData.getInt("category");
+        this.event = taskData.getInt("category");
 
         // find listview
         this.taskListView = (ListView) findViewById(R.id.taskListView);
         DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        databaseAccess.setCategory(this.category);
+        databaseAccess.setEvent(this.event);
         databaseAccess.open();
-        List<String> tasks = databaseAccess.getTaskItems(this.category);
+        List<String> tasks = databaseAccess.getTaskItems(this.event);
         databaseAccess.close();
 
                 ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked, tasks);

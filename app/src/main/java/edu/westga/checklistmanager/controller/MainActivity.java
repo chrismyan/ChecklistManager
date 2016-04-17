@@ -1,23 +1,19 @@
-package edu.westga.checklistmanager;
+package edu.westga.checklistmanager.controller;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import org.w3c.dom.Text;
+import edu.westga.checklistmanager.R;
 
 public class MainActivity extends AppCompatActivity {
+    ListView myTaskListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //            }
 //        });
+
+        this.myTaskListView = (ListView) findViewById(R.id.listView);
 
         populateListView();
         registerClickCallBack();
@@ -52,13 +50,13 @@ public class MainActivity extends AppCompatActivity {
                 myTasks);               // Items to be displayed
 
         // Configure List View
-        ListView myTaskListView = (ListView) findViewById(R.id.listView);
-        myTaskListView.setAdapter(adapter);
+//        ListView myTaskListView = (ListView) findViewById(R.id.listView);
+        this.myTaskListView.setAdapter(adapter);
     }
 
     private void registerClickCallBack() {
-    ListView myTasksListView = (ListView) findViewById(R.id.listView);
-        myTasksListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//    ListView myTasksListView = (ListView) findViewById(R.id.listView);
+        this.myTaskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View clickedView, int position, long id) {
                 TextView textView = (TextView) clickedView;

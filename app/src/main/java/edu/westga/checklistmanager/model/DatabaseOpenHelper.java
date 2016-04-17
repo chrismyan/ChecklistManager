@@ -1,6 +1,7 @@
-package edu.westga.checklistmanager;
+package edu.westga.checklistmanager.model;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
 import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
 
@@ -10,5 +11,14 @@ public class DatabaseOpenHelper extends SQLiteAssetHelper {
 
     public DatabaseOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (!db.isReadOnly()) {
+            // Enable foreign key constraints
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }
     }
 }

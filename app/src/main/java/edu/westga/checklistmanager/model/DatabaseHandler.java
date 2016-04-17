@@ -1,4 +1,4 @@
-package edu.westga.checklistmanager;
+package edu.westga.checklistmanager.model;
 
 import android.content.ContentValues;
 import android.content.Context;
