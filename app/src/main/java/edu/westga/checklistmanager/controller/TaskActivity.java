@@ -3,8 +3,6 @@ package edu.westga.checklistmanager.controller;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -21,9 +19,10 @@ import java.util.List;
 import edu.westga.checklistmanager.model.DatabaseAccess;
 import edu.westga.checklistmanager.R;
 
-public class TaskActivity extends AppCompatActivity {
+public class TaskActivity extends AppCompatActivity implements AddFragment.AddEventListener{
     private ListView taskListView;
     private int category;
+    private DatabaseAccess db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,14 +31,6 @@ public class TaskActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Retrieve text from main activity
@@ -47,20 +38,27 @@ public class TaskActivity extends AppCompatActivity {
         if(taskData == null) {
             return;
         }
-        String taskMessage = taskData.getString("taskMessage");
+        String event = taskData.getString("event");
         TextView taskText = (TextView) findViewById(R.id.checklistText);
-        taskText.setText(taskMessage );
+        taskText.setText(event);
 
         this.category = taskData.getInt("category");
 
         // find listview
         this.taskListView = (ListView) findViewById(R.id.taskListView);
         this.taskListView.setLongClickable(true);
-        DatabaseAccess databaseAccess = DatabaseAccess.getInstance(this);
-        databaseAccess.setEvent(this.category);
-        databaseAccess.open();
-        List<String> tasks = databaseAccess.getTaskItems(this.category);
-        databaseAccess.close();
+        this.db = DatabaseAccess.getInstance(this);
+        this.db.setEvent(this.category);
+        this.db.open();
+        populateListView();
+
+        this.registerClickCallBack();
+        this.registerLongClickCallBack();
+    }
+
+    private void populateListView() {
+        List<String> tasks = this.db.getTaskItems(this.category);
+        this.db.close();
 
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_checked, tasks);
         this.taskListView.setAdapter(adapter);
@@ -74,13 +72,12 @@ public class TaskActivity extends AppCompatActivity {
             String taskItem = adapter.getItem(counter).toString();
             Log.d("Item CHOOSEN", taskItem);
 
-            if(databaseAccess.isItemCompleted(taskItem)) {
+            if(this.db.isItemCompleted(taskItem)) {
                 this.taskListView.setItemChecked(counter, true);
+            } else {
+                this.taskListView.setItemChecked(counter, false);
             }
         }
-
-        this.registerClickCallBack();
-        this.registerLongClickCallBack();
     }
 
     private void registerClickCallBack() {
@@ -130,5 +127,10 @@ public class TaskActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .create();
         dialog.show();
+    }
+
+    @Override
+    public void onAddItem(String eventName) {
+        this.db.AddTaskItem(eventName,this.category);
     }
 }

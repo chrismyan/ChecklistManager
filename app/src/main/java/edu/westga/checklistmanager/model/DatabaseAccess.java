@@ -5,7 +5,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.provider.ContactsContract;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +76,22 @@ public class DatabaseAccess {
         return list;
     }
 
+    public List<Events> getAllEventObjects() {
+        List<Events> list = new ArrayList<>();
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT _eventName, _id FROM events" , null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Events event = new Events();
+            event.setName(cursor.getString(0));
+            event.setId(cursor.getInt(1));
+            list.add(event);
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return list;
+    }
+
     public List<String> getEvents() {
         List<String> list = new ArrayList<>();
         SQLiteDatabase db = openHelper.getReadableDatabase();
@@ -91,6 +106,7 @@ public class DatabaseAccess {
     }
 
     public void addEvent(String eventName) {
+        SQLiteDatabase database = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(DatabaseOpenHelper.COLUMN_EVENTNAME, eventName);
 
@@ -120,13 +136,9 @@ public class DatabaseAccess {
         String query = "Select * FROM " + DatabaseOpenHelper.TABLE_TASK_ITEMS + " WHERE " + DatabaseOpenHelper.COLUMN_TASKITEM_NAME + " =  \"" + taskItem + "\"";
         SQLiteDatabase db = openHelper.getReadableDatabase();
         Cursor cursor = db.rawQuery(query, null);
-        if(cursor.moveToFirst()){
-            String itemIDString = cursor.getString(0);
-            db.delete(DatabaseOpenHelper.TABLE_EVENTS, DatabaseOpenHelper.COLUMN_EVENT_ID + " = ?", new String[]{itemIDString});
-            cursor.close();
-            completed = true;
+        if(cursor.moveToFirst()) {
+            completed = cursor.getInt(3) > 0;
         }
-        db.close();
         return completed;
     }
 
@@ -146,5 +158,15 @@ public class DatabaseAccess {
         db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_taskItemName = ?", new String[]{taskItemName});
         db.close();
         return true;
+    }
+
+    public void AddTaskItem(String eventName, int category) {
+        SQLiteDatabase database = openHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseOpenHelper.COLUMN_TASKITEM_NAME, eventName);
+        values.put(DatabaseOpenHelper.COLUMN_TASK_ITEM_EVENT_ID, category);
+
+        database.insert(DatabaseOpenHelper.TABLE_TASK_ITEMS, null, values);
+        database.close();
     }
 }

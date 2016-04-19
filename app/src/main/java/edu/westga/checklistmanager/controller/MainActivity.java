@@ -19,9 +19,11 @@ import java.util.List;
 import edu.westga.checklistmanager.R;
 import edu.westga.checklistmanager.model.DatabaseAccess;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AddFragment.AddEventListener{
     ListView myTaskListView;
     DatabaseAccess db;
+    ArrayAdapter<String> adapter;
+    List<String> myEventsFromDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         this.myTaskListView.setLongClickable(true);
 
         // Access database
-        db = DatabaseAccess.getInstance(this);
+        this.db = DatabaseAccess.getInstance(this);
 
         populateListView();
         registerClickCallBack();
@@ -42,12 +44,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void populateListView() {
-        // Create list of items
-        String[] myEvents ={"Euro Trip", "Hiking", "Camping"};
-        List<String> myEventsFromDB = db.getEvents();
+//        // Create list of items
+        this.myEventsFromDB = db.getEvents();
 
         // Configure adapter
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+        this.adapter = new ArrayAdapter<String>(
                 this,                   // Sets up Context for activity
                 R.layout.task_item,     // Layout to use (create)
                 myEventsFromDB);               // Items to be displayed
@@ -63,11 +64,9 @@ public class MainActivity extends AppCompatActivity {
                 TextView textView = (TextView) clickedView;
                 String message = "You clicked " + position + " which is string " +
                         textView.getText();
-//                Toast.makeText(MainActivity.this,message, Toast.LENGTH_SHORT).show();
 
                 Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
 
-                checklistIntent.putExtra("taskMessage", message);
                 checklistIntent.putExtra("category", (int) position + 1);
                 startActivity(checklistIntent);
             }
@@ -97,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Log.d("DELETE", "Task to add: ");
+                                Log.d("DELETE", "Task to delete: ");
                                 deleteEvent(event);
                             }
                         })
@@ -106,13 +105,13 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    public void addEvent(String eventName) {
-        if(!eventName.equals("")) {
-            db.addEvent(eventName);
-        } else {
-            return;
-        }
-    }
+//    public void addEvent(String eventName) {
+//        if(!eventName.equals("")) {
+//            db.addEvent(eventName);
+//        } else {
+//            return;
+//        }
+//    }
 
     public void deleteEvent(String eventName) {
         if(!eventName.equals("")) {
@@ -120,5 +119,11 @@ public class MainActivity extends AppCompatActivity {
         } else {
             return;
         }
+    }
+
+    @Override
+    public void onAddItem(String eventName) {
+        this.db.addEvent(eventName);
+        populateListView();
     }
 }
