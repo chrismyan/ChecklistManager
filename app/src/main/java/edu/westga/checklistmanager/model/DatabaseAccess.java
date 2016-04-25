@@ -5,6 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.ContactsContract;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,114 +61,64 @@ public class DatabaseAccess {
         this.event = category;
     }
 
-    /**
-     * Read all quotes from the database.
-     *
-     * @return a List of quotes
-     */
-    public List<String> getTaskItems(int category) {
-        List<String> list = new ArrayList<>();
-        Cursor cursor = database.rawQuery("SELECT _taskItemName, _id FROM taskitems WHERE _eventID =" + Integer.toString(this.event), null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            list.add(cursor.getString(0));
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return list;
+    public Cursor getTaskItemsCursor(int category) {
+        return database.rawQuery("SELECT _taskItemName, _id, _completed FROM taskitems WHERE _eventID =" + Integer.toString(this.event), null);
     }
 
-    public List<Events> getAllEventObjects() {
+    public Cursor getAllEventCursor() {
         List<Events> list = new ArrayList<>();
         SQLiteDatabase db = openHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _eventName, _id FROM events" , null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            Events event = new Events();
-            event.setName(cursor.getString(0));
-            event.setId(cursor.getInt(1));
-            list.add(event);
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return list;
+        return db.rawQuery("SELECT _eventName, _id FROM events" , null);
     }
 
-    public List<String> getEvents() {
-        List<String> list = new ArrayList<>();
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT _eventName, _id FROM events" , null);
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            list.add(cursor.getString(0));
-            cursor.moveToNext();
-        }
-        cursor.close();
-        return list;
-    }
-
-    public void addEvent(String eventName) {
+    public void addEvent(Events newEvent) {
         SQLiteDatabase database = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_EVENTNAME, eventName);
+        values.put(DatabaseOpenHelper.COLUMN_EVENTNAME, newEvent.getName());
 
         database.insert(DatabaseOpenHelper.TABLE_EVENTS, null, values);
         database.close();
     }
 
-    public boolean deleteEvent(String eventName) {
+    public boolean deleteEventCursor(Events deleteEvent) {
         boolean result = false;
-        String query = "Select * FROM " + DatabaseOpenHelper.TABLE_EVENTS + " WHERE " + DatabaseOpenHelper.COLUMN_EVENTNAME + " =  \"" + eventName + "\"";
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
-//        int eventID = Integer.parseInt(eventIDString);
-
-        if(cursor.moveToFirst()){
-            String eventIDString = cursor.getString(0);
-            db.delete(DatabaseOpenHelper.TABLE_EVENTS, DatabaseOpenHelper.COLUMN_EVENT_ID + " = ?", new String[]{eventIDString});
-            cursor.close();
+        try {
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+            db.delete(DatabaseOpenHelper.TABLE_EVENTS, DatabaseOpenHelper.COLUMN_EVENT_ID + " = ?", new String[]{Integer.toString(deleteEvent.getId())});
+            db.close();
             result = true;
+        } catch (Exception ex) {
+            Log.d("Check database", ex.getMessage());
         }
-        db.close();
+
         return result;
     }
 
-    public boolean isItemCompleted(String taskItem) {
-        boolean completed = false;
-        String query = "Select * FROM " + DatabaseOpenHelper.TABLE_TASK_ITEMS + " WHERE " + DatabaseOpenHelper.COLUMN_TASKITEM_NAME + " =  \"" + taskItem + "\"";
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
-        if(cursor.moveToFirst()) {
-            completed = cursor.getInt(3) > 0;
-        }
-        return completed;
-    }
-
-    public boolean itemCompleted(String taskItemName) {
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, 1);
-        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_taskItemName =?", new String[]{taskItemName});
-        db.close();
-        return true;
-    }
-
-    public boolean itemNotCompleted(String taskItemName) {
-        SQLiteDatabase db = openHelper.getReadableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, 0);
-        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_taskItemName = ?", new String[]{taskItemName});
-        db.close();
-        return true;
-    }
-
-    public void AddTaskItem(String eventName, int category) {
+    public void addTaskItem(TaskItems newItem) {
         SQLiteDatabase database = openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_TASKITEM_NAME, eventName);
-        values.put(DatabaseOpenHelper.COLUMN_TASK_ITEM_EVENT_ID, category);
+        values.put(DatabaseOpenHelper.COLUMN_TASKITEM_NAME, newItem.getName());
+        values.put(DatabaseOpenHelper.COLUMN_TASK_ITEM_EVENT_ID, newItem.getEventId());
+        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, 0);
 
         database.insert(DatabaseOpenHelper.TABLE_TASK_ITEMS, null, values);
         database.close();
+    }
+
+    public void deleteTaskItem(TaskItems item) {
+        try {
+            SQLiteDatabase db = openHelper.getReadableDatabase();
+            db.delete(DatabaseOpenHelper.TABLE_TASK_ITEMS, DatabaseOpenHelper.COLUMN_ITEM_ID + " = ?", new String[]{Integer.toString(item.getId())});
+            db.close();
+        } catch (Exception ex) {
+            Log.d("Check database", ex.getMessage());
+        }
+    }
+
+    public void isTaskItemCompleted(int id, int completed) {
+        SQLiteDatabase db = this.openHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, completed);
+        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_id = ?", new String[]{Integer.toString(id)});
     }
 }

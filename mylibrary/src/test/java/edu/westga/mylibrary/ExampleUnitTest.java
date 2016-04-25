@@ -1,4 +1,4 @@
-package edu.westga.checklistmanager;
+package edu.westga.mylibrary;
 
 import org.junit.Test;
 

@@ -1,29 +1,32 @@
 package edu.westga.checklistmanager.controller;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.List;
-
 import edu.westga.checklistmanager.R;
 import edu.westga.checklistmanager.model.DatabaseAccess;
+import edu.westga.checklistmanager.model.Events;
 
 public class MainActivity extends AppCompatActivity implements AddFragment.AddEventListener{
     ListView myTaskListView;
     DatabaseAccess db;
-    ArrayAdapter<String> adapter;
-    List<String> myEventsFromDB;
+    TodoCursorAdapter todoAdapter;
+    int clickedEvent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,33 +44,57 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
         populateListView();
         registerClickCallBack();
         registerLongClickCallBack();
+        deleteMessage();
     }
 
     public void populateListView() {
-//        // Create list of items
-        this.myEventsFromDB = db.getEvents();
-
-        // Configure adapter
-        this.adapter = new ArrayAdapter<String>(
-                this,                   // Sets up Context for activity
-                R.layout.task_item,     // Layout to use (create)
-                myEventsFromDB);               // Items to be displayed
+        // Get cursor object from database
+        Cursor todoCursor = db.getAllEventCursor();
+        this.todoAdapter = new TodoCursorAdapter(this, todoCursor);
 
         // Configure List View
-        this.myTaskListView.setAdapter(adapter);
+        this.myTaskListView.setAdapter(this.todoAdapter);
     }
+
+    public class TodoCursorAdapter extends CursorAdapter {
+        public TodoCursorAdapter(Context context, Cursor cursor) {
+            super(context, cursor, 0);
+        }
+
+        // The newView method is used to inflate a new view and return it,
+        // you don't bind any data to the view at this point.
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            return LayoutInflater.from(context).inflate(R.layout.task_item, parent, false);
+        }
+
+        // The bindView method is used to bind all data to a given view
+        // such as setting the text on a TextView.
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            // Find fields to populate in inflated template
+            TextView txtEvent = (TextView) view.findViewById(R.id.listItem);
+
+            // Extract properties from cursor
+            String eventName = cursor.getString(cursor.getColumnIndexOrThrow("_eventName"));
+
+            // Populate fields with extracted properties
+            txtEvent.setText(eventName);
+        }
+    }
+
+
 
     private void registerClickCallBack() {
         this.myTaskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View clickedView, int position, long id) {
+            public void onItemClick(AdapterView<?> parent, View clickedView, int position, long clickedId) {
                 TextView textView = (TextView) clickedView;
-                String message = "You clicked " + position + " which is string " +
-                        textView.getText();
 
                 Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
 
-                checklistIntent.putExtra("category", (int) position + 1);
+                checklistIntent.putExtra("event", (int) clickedId);
+                checklistIntent.putExtra("eventName", textView.getText());
                 startActivity(checklistIntent);
             }
         });
@@ -76,54 +103,54 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
     private void registerLongClickCallBack() {
         this.myTaskListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                                           final int arg2, long arg3) {
-                Toast.makeText(MainActivity.this, "Main Activity: this is my Toast message!!! =)",
-                        Toast.LENGTH_LONG).show();
-                TextView textView = (TextView) arg1;
+            public boolean onItemLongClick(AdapterView<?> arg0, View view,
+                                           final int position, long id) {
+                MainActivity.this.clickedEvent = (int) id;
+                TextView textView = (TextView) view;
                 String event = textView.getText().toString();
-                showDeleteDialog(event);
+                int eventId = (int) id;
+                showDeleteDialogCursor(eventId, event);
+//                showDeleteDialog(event);
                 return true;
 
             }
         });
     }
 
-    public void showDeleteDialog(final String event) {
+    private void showDeleteDialogCursor(final int eventId, String event) {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Delete event")
                 .setMessage("Are you sure you want to delete " + event + "? ")
-                        .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Log.d("DELETE", "Task to delete: ");
-                                deleteEvent(event);
-                            }
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .create();
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.d("DELETE", "Task to delete: ");
+                        deleteEventCursor(eventId);
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .create();
         dialog.show();
     }
 
-//    public void addEvent(String eventName) {
-//        if(!eventName.equals("")) {
-//            db.addEvent(eventName);
-//        } else {
-//            return;
-//        }
-//    }
+    public void deleteEventCursor(int eventID) {
+        Events deleteEvent = new Events();
+        deleteEvent.setId(eventID);
+        this.db.deleteEventCursor(deleteEvent);
+        populateListView();
+    }
 
-    public void deleteEvent(String eventName) {
-        if(!eventName.equals("")) {
-            db.deleteEvent(eventName);
-        } else {
-            return;
-        }
+    public void deleteMessage() {
+        Toast.makeText(this,"To delete press and HOLD an item", Toast.LENGTH_LONG).show();
+
     }
 
     @Override
     public void onAddItem(String eventName) {
-        this.db.addEvent(eventName);
+        Events newEvent = new Events();
+        newEvent.setName(eventName);
+        this.db.addEvent(newEvent);
         populateListView();
+        deleteMessage();
     }
 }

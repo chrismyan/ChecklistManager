@@ -51,16 +51,12 @@ public class AddFragment extends Fragment {
                 } catch(Exception ex) {
                     Toast.makeText(getContext(), ex.getMessage(), Toast.LENGTH_SHORT).show();
                 }
-//                db.addEvent(newEventString);
-
             }
         });
-
         return theView;
     }
 
     public void addEvent() {
-        Toast.makeText(getContext(), this.newEventString, Toast.LENGTH_SHORT).show();
         this.listener.onAddItem(this.newEventString);
     }
 
@@ -71,10 +67,10 @@ public class AddFragment extends Fragment {
     }
 
     private void setEventString() throws Exception {
-            if (this.addEvent.getText().toString().equals("")) {
-                throw new Exception("This field is required");
-            } else {
-                this.newEventString = this.addEvent.getText().toString();
-            }
+        if (this.addEvent.getText().toString().equals("")) {
+            throw new Exception("This field is required");
+        } else {
+            this.newEventString = this.addEvent.getText().toString();
+        }
     }
 }
