@@ -26,6 +26,7 @@ public class TaskActivity extends AppCompatActivity implements AddFragment.AddEv
     private ListView taskListView;
     private int event;
     private DatabaseAccess db;
+    private String itemName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +106,7 @@ public class TaskActivity extends AppCompatActivity implements AddFragment.AddEv
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TextView textView = (TextView) view;
+                TaskActivity.this.setClickItemName(textView.getText().toString());
                 CheckedTextView testChecked = (CheckedTextView) view;
                 if(testChecked.isChecked()) {
                     isTaskItemCompleted((int) id,1);
@@ -113,6 +115,14 @@ public class TaskActivity extends AppCompatActivity implements AddFragment.AddEv
                 }
             }
         });
+    }
+
+    public void setClickItemName(String name) {
+        this.itemName = name;
+    }
+
+    public String getClickedItemName() {
+        return this.itemName;
     }
 
     private void isTaskItemCompleted(int id, int completed) {

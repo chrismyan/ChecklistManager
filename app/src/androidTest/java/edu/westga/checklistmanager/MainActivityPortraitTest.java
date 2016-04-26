@@ -59,7 +59,7 @@ public class MainActivityPortraitTest extends ActivityInstrumentationTestCase2<M
         assertTrue(listBefore.size() < listAfter.size());
     }
 
-    public void testIfEventDelete() {
+    public void testWhenEventDelete() {
 
         Cursor cursorBefore = this.db.getAllEventCursor();
         List<Events> listBefore = new ArrayList<>();
@@ -124,7 +124,7 @@ public class MainActivityPortraitTest extends ActivityInstrumentationTestCase2<M
         assertTrue(listBefore.size() < listAfter.size());
     }
 
-    public void testIfTaskItemDelete() {
+    public void testWhenTaskItemDelete() {
 
         Cursor cursorBefore = this.db.getTaskItemsCursor(1);
         List<TaskItems> listBefore = new ArrayList<>();
@@ -176,10 +176,6 @@ public class MainActivityPortraitTest extends ActivityInstrumentationTestCase2<M
 
         String eventName = this.main.getEventNameToPass();
         assertEquals("Gym", eventName);
-    }
-
-    public void testWhenFirstTaskItemClickedNameCorrect() {
-
     }
 
     @Override
