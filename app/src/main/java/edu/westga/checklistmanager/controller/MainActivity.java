@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
     DatabaseAccess db;
     TodoCursorAdapter todoAdapter;
     int clickedEvent;
+    String eventName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,12 +93,20 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
                 TextView textView = (TextView) clickedView;
 
                 Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
-
+                setEventNameToPass(textView.getText().toString());
                 checklistIntent.putExtra("event", (int) clickedId);
-                checklistIntent.putExtra("eventName", textView.getText());
+                checklistIntent.putExtra("eventName", MainActivity.this.eventName);
                 startActivity(checklistIntent);
             }
         });
+    }
+
+    public void setEventNameToPass(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getEventNameToPass() {
+        return this.eventName;
     }
 
     private void registerLongClickCallBack() {

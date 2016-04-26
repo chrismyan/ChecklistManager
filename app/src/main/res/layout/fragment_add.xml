@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    tools:context=".controller.AddFragment">
+    tools:context=".controller.AddFragment"
+    android:id="@+id/addFragment">
 
     <!-- TODO: Update blank fragment layout -->
 

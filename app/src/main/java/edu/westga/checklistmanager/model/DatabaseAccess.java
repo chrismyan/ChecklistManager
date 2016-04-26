@@ -62,7 +62,8 @@ public class DatabaseAccess {
     }
 
     public Cursor getTaskItemsCursor(int category) {
-        return database.rawQuery("SELECT _taskItemName, _id, _completed FROM taskitems WHERE _eventID =" + Integer.toString(this.event), null);
+        database = openHelper.getReadableDatabase();
+        return database.rawQuery("SELECT _taskItemName, _id, _completed FROM taskitems WHERE _eventID =" + Integer.toString(category), null);
     }
 
     public Cursor getAllEventCursor() {
@@ -113,6 +114,16 @@ public class DatabaseAccess {
         } catch (Exception ex) {
             Log.d("Check database", ex.getMessage());
         }
+    }
+
+    public int getTaskItemId(TaskItems item) {
+        SQLiteDatabase db = openHelper.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT _id FROM taskitems WHERE _taskItemName = '" + item.getName() + "'" + "AND _eventID = '"
+                + item.getEventId() + "'", null);
+        cursor.moveToFirst();
+        int taskId = cursor.getInt(0);
+        db.close();
+        return taskId;
     }
 
     public void isTaskItemCompleted(int id, int completed) {
