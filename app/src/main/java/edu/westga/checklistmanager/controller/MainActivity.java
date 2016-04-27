@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
     TodoCursorAdapter todoAdapter;
     int clickedEvent;
     String eventName;
+    Cursor todoCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
 
     public void populateListView() {
         // Get cursor object from database
-        Cursor todoCursor = db.getAllEventCursor();
+        this.todoCursor = db.getAllEventCursor();
         if(todoCursor.getCount() <= 0) {
             String[] emptyMessage = {"Please add an event above"};
             ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, emptyMessage);
@@ -94,18 +95,22 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
 
 
     private void registerClickCallBack() {
-        this.myTaskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View clickedView, int position, long clickedId) {
-                TextView textView = (TextView) clickedView;
+        if(this.todoCursor.getCount() <= 0) {
+            return;
+        } else {
+            this.myTaskListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View clickedView, int position, long clickedId) {
+                    TextView textView = (TextView) clickedView;
 
-                Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
-                setEventNameToPass(textView.getText().toString());
-                checklistIntent.putExtra("event", (int) clickedId);
-                checklistIntent.putExtra("eventName", MainActivity.this.eventName);
-                startActivity(checklistIntent);
-            }
-        });
+                    Intent checklistIntent = new Intent(MainActivity.this, TaskActivity.class);
+                    setEventNameToPass(textView.getText().toString());
+                    checklistIntent.putExtra("event", (int) clickedId);
+                    checklistIntent.putExtra("eventName", MainActivity.this.eventName);
+                    startActivity(checklistIntent);
+                }
+            });
+        }
     }
 
     public void setEventNameToPass(String eventName) {
@@ -117,20 +122,23 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
     }
 
     private void registerLongClickCallBack() {
-        this.myTaskListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> arg0, View view,
-                                           final int position, long id) {
-                MainActivity.this.clickedEvent = (int) id;
-                TextView textView = (TextView) view;
-                String event = textView.getText().toString();
-                int eventId = (int) id;
-                showDeleteDialogCursor(eventId, event);
-//                showDeleteDialog(event);
-                return true;
+        if(this.todoCursor.getCount() <= 0) {
+            return;
+        } else {
+            this.myTaskListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> arg0, View view,
+                                               final int position, long id) {
+                    MainActivity.this.clickedEvent = (int) id;
+                    TextView textView = (TextView) view;
+                    String event = textView.getText().toString();
+                    int eventId = (int) id;
+                    showDeleteDialogCursor(eventId, event);
+                    return true;
 
-            }
-        });
+                }
+            });
+        }
     }
 
     private void showDeleteDialogCursor(final int eventId, String event) {
