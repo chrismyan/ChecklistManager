@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
@@ -65,10 +66,17 @@ public class TaskActivity extends AppCompatActivity implements AddFragment.AddEv
         // Get Cursor object from database
         this.db.open();
         Cursor todoCursor = db.getTaskItemsCursor(this.event);
-        TodoCursorAdapter adapter = new TodoCursorAdapter(this, todoCursor);
+        if(todoCursor.getCount() <= 0) {
+            String[] emptyMessage = {"Please add a task item above"};
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,emptyMessage);
+            this.taskListView.setAdapter(adapter);
 
-        // Configure List View
-        this.taskListView.setAdapter(adapter);
+        } else {
+            TodoCursorAdapter adapter = new TodoCursorAdapter(this, todoCursor);
+
+            // Configure List View
+            this.taskListView.setAdapter(adapter);
+        }
 
     }
 
@@ -109,9 +117,15 @@ public class TaskActivity extends AppCompatActivity implements AddFragment.AddEv
                 TaskActivity.this.setClickItemName(textView.getText().toString());
                 CheckedTextView testChecked = (CheckedTextView) view;
                 if(testChecked.isChecked()) {
-                    isTaskItemCompleted((int) id,1);
+                    TaskItems item = new TaskItems();
+                    item.setId((int) id);
+                    item.setCompleted(1);
+                    isTaskItemCompleted(item);
                 } else {
-                    isTaskItemCompleted((int) id,0);
+                    TaskItems item = new TaskItems();
+                    item.setId((int) id);
+                    item.setCompleted(0);
+                    isTaskItemCompleted(item);
                 }
             }
         });
@@ -125,8 +139,8 @@ public class TaskActivity extends AppCompatActivity implements AddFragment.AddEv
         return this.itemName;
     }
 
-    private void isTaskItemCompleted(int id, int completed) {
-        this.db.isTaskItemCompleted(id, completed);
+    private void isTaskItemCompleted(TaskItems item) {
+        this.db.isTaskItemCompleted(item);
         populateListView();
     }
 

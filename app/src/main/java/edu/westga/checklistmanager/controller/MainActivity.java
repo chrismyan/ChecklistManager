@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
@@ -51,10 +52,16 @@ public class MainActivity extends AppCompatActivity implements AddFragment.AddEv
     public void populateListView() {
         // Get cursor object from database
         Cursor todoCursor = db.getAllEventCursor();
-        this.todoAdapter = new TodoCursorAdapter(this, todoCursor);
+        if(todoCursor.getCount() <= 0) {
+            String[] emptyMessage = {"Please add an event above"};
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, emptyMessage);
+            this.myTaskListView.setAdapter(adapter);
+        } else {
+            this.todoAdapter = new TodoCursorAdapter(this, todoCursor);
 
-        // Configure List View
-        this.myTaskListView.setAdapter(this.todoAdapter);
+            // Configure List View
+            this.myTaskListView.setAdapter(this.todoAdapter);
+        }
     }
 
     public class TodoCursorAdapter extends CursorAdapter {

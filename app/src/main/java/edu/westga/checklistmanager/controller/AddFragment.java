@@ -58,6 +58,7 @@ public class AddFragment extends Fragment {
 
     public void addEvent() {
         this.listener.onAddItem(this.newEventString);
+        this.addEvent.setText("");
     }
 
     @Override

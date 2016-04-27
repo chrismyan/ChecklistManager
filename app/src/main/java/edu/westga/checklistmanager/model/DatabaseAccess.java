@@ -67,9 +67,9 @@ public class DatabaseAccess {
     }
 
     public Cursor getAllEventCursor() {
-        List<Events> list = new ArrayList<>();
         SQLiteDatabase db = openHelper.getReadableDatabase();
         return db.rawQuery("SELECT _eventName, _id FROM events" , null);
+
     }
 
     public void addEvent(Events newEvent) {
@@ -126,10 +126,11 @@ public class DatabaseAccess {
         return taskId;
     }
 
-    public void isTaskItemCompleted(int id, int completed) {
+    public void isTaskItemCompleted(TaskItems item) {
         SQLiteDatabase db = this.openHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, completed);
-        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_id = ?", new String[]{Integer.toString(id)});
+        values.put(DatabaseOpenHelper.COLUMN_COMPLETED, item.getCompleted());
+        db.update(DatabaseOpenHelper.TABLE_TASK_ITEMS, values, "_id = ?", new String[]{Integer.toString(item.getId())});
+        db.close();
     }
 }
